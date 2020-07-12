@@ -1,2 +1,5 @@
 (library
- (name okasaki))
+ (name okasaki)
+ (libraries base stdio))
+
+(env (dev (flags (:standard -warn-error -A))))
