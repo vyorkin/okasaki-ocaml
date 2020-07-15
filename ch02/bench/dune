@@ -1,0 +1,4 @@
+(executable
+ (name bench)
+ (modules bench)
+ (libraries ch02 core_bench.inline_benchmarks))

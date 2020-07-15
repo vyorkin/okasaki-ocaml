@@ -1,15 +1,21 @@
 # Frontend to dune.
 
-default: exe
+CHAPTER := 02
 
-exe:
-	dune exe bin/main.exe
+default:
+	dune build
 
 test:
-	dune exe ./test/okasaki.exe
+	dune exe ./ch$(CHAPTER)/test/testsuite.exe
+
+bench:
+	./ch$(CHAPTER)/bench/runner.sh
 
 utop:
-	dune utop --
+	dune utop
+
+fmt:
+	dune build @fmt --auto-promote
 
 clean:
 	dune clean
@@ -17,4 +23,4 @@ clean:
 # in .gitignore (-X).
 	git clean -dfXq
 
-.PHONY: default exe test clean utop
+.PHONY: default test bench utop fmt clean
