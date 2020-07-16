@@ -15,9 +15,10 @@ module type Gen = sig
 end
 
 module type Set = sig
-  include Gen
-
+  type t
   type elem
+
+  include Gen with type t := t
 
   val empty : t
 
@@ -36,8 +37,22 @@ module type Set = sig
   val complete' : elem * int -> t
 end
 
+module type FiniteMap = sig
+  type k
+  type v
+  type t
+
+  include Gen with type t := t
+
+  val empty  : t
+  val bind   : k * v * t -> t
+  val lookup : k * t -> v option
+end
+
 module type Ordered = sig
-  include Gen
+  type t
+
+  include Gen with type t := t
 
   val name : string
 
@@ -72,7 +87,29 @@ module OrderedInt = struct
   let generate1 () = QCheck.Gen.generate1 gen
 end
 
-module UnbalancedSet (E : Ordered) : Set = struct
+module MkOrderedPair (K : Ordered) (V : Ordered) = struct
+  type t = K.t * V.t [@@deriving show { with_path = false }]
+
+  let name = sprintf "%s * %s" K.name V.name
+
+  let z = (K.z, V.z)
+
+  let mk k v : t = (k, v)
+
+  let ( = ) (k1, _) (k2, _) = K.(k1 = k2)
+  let ( < ) (k1, _) (k2, _) = K.(k1 < k2)
+  let ( <= ) (k1, _) (k2, _) = K.(k1 <= k2)
+
+  let gen = QCheck.Gen.pair K.gen V.gen
+
+  let arbitrary = QCheck.make gen
+
+  let generate n = QCheck.Gen.generate ~n gen
+
+  let generate1 () = QCheck.Gen.generate1 gen
+end
+
+module MkUnbalancedSet (E : Ordered) : Set = struct
   type elem = E.t [@@deriving show { with_path = false }]
 
   type t = E | T of t * elem * t [@@deriving show { with_path = false }]
@@ -154,20 +191,22 @@ module UnbalancedSet (E : Ordered) : Set = struct
   (* Ex. 2.2 *)
   let member' (x, t) = mem (x, t, E.z)
 
-  let rec complete' (x, d) =
-    match d with
-    | 0 -> failwith "Zero depth given"
-    | 1 -> T (E, x, E)
-    | m -> T (complete' (x, m - 1), x, E)
-
+  (* Ex. 2.2 (a) *)
   let rec complete (x, d) =
     match d with
     | 0 -> T (E, x, T (E, x, E))
     | 1 -> T (T (E, x, E), x, complete (x, 0))
     | m -> T (complete (x, m - 2), x, complete (x, m - 1))
 
+  (* Ex. 2.5 (b) *)
+  let rec complete' (x, d) =
+    match d with
+    | 0 -> failwith "Zero depth given"
+    | 1 -> T (E, x, E)
+    | m -> T (complete' (x, m - 1), x, E)
+
   let%bench_module ("UnbalancedSet"[@name_suffix sprintf "_%s" E.name]) =
-    ( module struct
+    (module struct
       let%bench "member" =
         member (E.generate1 (), generate1 ())
 
@@ -180,9 +219,30 @@ module UnbalancedSet (E : Ordered) : Set = struct
       let%bench "insert' (Ex. 2.3)" =
         insert' (E.generate1 (), generate1 ())
 
-      let%bench "insert'' (Ex. 2.3)" =
+      let%bench "insert'' (Ex. 2.3 CPS)" =
         insert'' (E.generate1 (), generate1 ())
+
+      let%bench "complete (Ex. 2.6 (a))" =
+        complete (E.generate1 (), 20)
+
+      let%bench "complete (Ex. 2.6 (b))" =
+        complete' (E.generate1 (), 20)
     end)
 end
 
-module IntUS = UnbalancedSet (OrderedInt)
+(* module MkFiniteMap (K : Ordered) (V : Ordered) : FiniteMap = struct
+ *   module E = MkOrderedPair (K)(V)
+ *   module S = MkUnbalancedSet (E)
+ *
+ *   type k = K.t
+ *   type v = V.t
+ *   type t = S.t
+ *
+ *   let empty = S.empty
+ *
+ *   let bind (k, v, s) =
+ *     let e = E.mk k v in
+ *     S.insert (e ??, s)
+ * end *)
+
+module IntUS = MkUnbalancedSet (OrderedInt)
