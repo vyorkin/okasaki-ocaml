@@ -1,0 +1,12 @@
+(executable
+ (name testsuite)
+ (libraries ch03 core alcotest qcheck qcheck-alcotest)
+ (preprocess
+  (pps ppx_deriving.show ppx_compare)))
+
+(include_subdirs unqualified)
+
+(env
+ (dev
+  (flags
+   (:standard -warn-error -A))))

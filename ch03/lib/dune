@@ -1,0 +1,15 @@
+(library
+ (name ch03)
+ (inline_tests)
+ (libraries core qcheck-core)
+ (library_flags -linkall)
+ (preprocess
+  (pps ppx_deriving.show ppx_compare ppx_deriving.make ppx_sexp_conv
+    ppx_inline_test ppx_bench ppx_expect)))
+
+(include_subdirs unqualified)
+
+(env
+ (dev
+  (flags
+   (:standard -warn-error -A))))
