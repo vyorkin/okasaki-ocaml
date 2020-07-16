@@ -1,7 +1,7 @@
 (library
- (name ch02)
+ (name okasaki_common)
  (inline_tests)
- (libraries core qcheck-core okasaki_common)
+ (libraries core qcheck-core)
  (library_flags -linkall)
  (preprocess
   (pps ppx_deriving.show ppx_compare ppx_deriving.make ppx_sexp_conv

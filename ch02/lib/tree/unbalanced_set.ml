@@ -1,24 +1,11 @@
 open Core_kernel
-
-module type Gen = sig
-  type t
-
-  val pp : Format.formatter -> t -> unit
-
-  val gen : t QCheck.Gen.t
-
-  val arbitrary : t QCheck.arbitrary
-
-  val generate : int -> t list
-
-  val generate1 : unit -> t
-end
+open Okasaki_common
 
 module type Set = sig
   type t
   type elem
 
-  include Gen with type t := t
+  include Gen.S with type t := t
 
   val empty : t
 
@@ -42,52 +29,14 @@ module type FiniteMap = sig
   type v
   type t
 
-  include Gen with type t := t
+  include Gen.S with type t := t
 
   val empty  : t
   val bind   : k * v * t -> t
   val lookup : k * t -> v option
 end
 
-module type Ordered = sig
-  type t
-
-  include Gen with type t := t
-
-  val name : string
-
-  val z : t
-
-  val ( = ) : t -> t -> bool
-
-  val ( < ) : t -> t -> bool
-
-  val ( <= ) : t -> t -> bool
-end
-
-module OrderedInt = struct
-  type t = int [@@deriving show]
-
-  let name = "int"
-
-  let z = Int.min_value
-
-  let ( = ) = Int.( = )
-
-  let ( < ) = Int.( < )
-
-  let ( <= ) = Int.( <= )
-
-  let gen = QCheck.Gen.nat
-
-  let arbitrary = QCheck.make gen
-
-  let generate n = QCheck.Gen.generate ~n gen
-
-  let generate1 () = QCheck.Gen.generate1 gen
-end
-
-module MkOrderedPair (K : Ordered) (V : Ordered) = struct
+module MkOrderedPair (K : Ordered.S) (V : Ordered.S) = struct
   type t = K.t * V.t [@@deriving show { with_path = false }]
 
   let name = sprintf "%s * %s" K.name V.name
@@ -109,7 +58,7 @@ module MkOrderedPair (K : Ordered) (V : Ordered) = struct
   let generate1 () = QCheck.Gen.generate1 gen
 end
 
-module MkUnbalancedSet (E : Ordered) : Set = struct
+module MkUnbalancedSet (E : Ordered.S) : Set = struct
   type elem = E.t [@@deriving show { with_path = false }]
 
   type t = E | T of t * elem * t [@@deriving show { with_path = false }]
@@ -245,4 +194,4 @@ end
  *     S.insert (e ??, s)
  * end *)
 
-module IntUS = MkUnbalancedSet (OrderedInt)
+module IntUS = MkUnbalancedSet (Ordered.Int)
