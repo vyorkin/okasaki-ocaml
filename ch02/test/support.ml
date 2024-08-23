@@ -1,4 +1,4 @@
-open Core_kernel
+open Core
 
 let rec dropLengthOpt l1 l2 =
   match (l1, l2) with
@@ -20,4 +20,4 @@ let isSuffixOf eq s l =
       | None -> false
       | Some d ->
           let s' = dropLength d l in
-          List.equal eq s s' )
+          List.equal eq s s')

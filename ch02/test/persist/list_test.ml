@@ -1,9 +1,8 @@
-open Core_kernel
+open Core
 open Support
 open Ch02.List
 
 let propLength l = List.(length l + 1 = length @@ suffixes l)
-
 let propEmpty l = isSuffixOf Int.equal [] l
 
 let testLength =

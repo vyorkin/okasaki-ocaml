@@ -19,8 +19,8 @@ fmt:
 
 clean:
 	dune clean
-# Optionally, remove all files/folders ignored by git as defined
-# in .gitignore (-X).
+	# Optionally, remove all files/folders ignored by git as defined
+	# in .gitignore (-X).
 	git clean -dfXq
 
 .PHONY: default test bench utop fmt clean

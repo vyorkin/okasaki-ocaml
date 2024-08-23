@@ -1,11 +1,10 @@
 type 'a t = Nil | Cons of 'a * 'a t
 
 let empty = Nil
-
-let isEmpty = function Nil -> true | Cons _ -> false
-
+let is_empty = function Nil -> true | Cons _ -> false
 let cons (x, s) = Cons (x, s)
-
 let head = function Nil -> failwith "Stack is empty" | Cons (h, _) -> h
-
 let tail = function Nil -> failwith "Stack is empty" | Cons (_, t) -> t
+
+let rec ( ++ ) xs ys =
+  match xs with Nil -> ys | Cons (x, xs') -> Cons (x, xs' ++ ys)

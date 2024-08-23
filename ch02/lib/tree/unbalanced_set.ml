@@ -1,4 +1,4 @@
-open Core_kernel
+open Core
 open Okasaki_common
 
 module type Set = sig
@@ -8,19 +8,12 @@ module type Set = sig
   include Gen.S with type t := t
 
   val empty : t
-
   val insert : elem * t -> t
-
   val insert' : elem * t -> t
-
   val insert'' : elem * t -> t
-
   val member : elem * t -> bool
-
   val member' : elem * t -> bool
-
   val complete : elem * int -> t
-
   val complete' : elem * int -> t
 end
 
@@ -31,8 +24,8 @@ module type FiniteMap = sig
 
   include Gen.S with type t := t
 
-  val empty  : t
-  val bind   : k * v * t -> t
+  val empty : t
+  val bind : k * v * t -> t
   val lookup : k * t -> v option
 end
 
@@ -40,31 +33,22 @@ module MkOrderedPair (K : Ordered.S) (V : Ordered.S) = struct
   type t = K.t * V.t [@@deriving show { with_path = false }]
 
   let name = sprintf "%s * %s" K.name V.name
-
   let z = (K.z, V.z)
-
   let mk k v : t = (k, v)
-
   let ( = ) (k1, _) (k2, _) = K.(k1 = k2)
   let ( < ) (k1, _) (k2, _) = K.(k1 < k2)
   let ( <= ) (k1, _) (k2, _) = K.(k1 <= k2)
-
   let gen = QCheck.Gen.pair K.gen V.gen
-
   let arbitrary = QCheck.make gen
-
   let generate n = QCheck.Gen.generate ~n gen
-
   let generate1 () = QCheck.Gen.generate1 gen
 end
 
 module MkUnbalancedSet (E : Ordered.S) : Set = struct
   type elem = E.t [@@deriving show { with_path = false }]
-
   type t = E | T of t * elem * t [@@deriving show { with_path = false }]
 
   let empty = E
-
   let node l x r = T (l, x, r)
 
   let rec insert (x, t) =
@@ -85,7 +69,8 @@ module MkUnbalancedSet (E : Ordered.S) : Set = struct
       | T (l, v, r) when v < x -> T (ins l, v, r)
       | T (l, v, r) when x < v -> T (l, v, ins r)
       | _ -> raise SameValue
-    in try ins t with SameValue -> t
+    in
+    try ins t with SameValue -> t
 
   (* Ex. 2.3 (CPS) *)
   let insert'' (x, t) =
@@ -94,14 +79,10 @@ module MkUnbalancedSet (E : Ordered.S) : Set = struct
       | E -> insLeaf y cont
       | T (l, z, r) -> insNode y cont (l, z, r)
     and insNode y cont (l, z, r) =
-      if x < y
-      then ins y (fun l' -> cont (T (l', z, r))) l
+      if x < y then ins y (fun l' -> cont (T (l', z, r))) l
       else ins z (fun r' -> cont (T (l, z, r'))) r
-    and insLeaf y cont =
-      if x = y then t else cont (T (E, x, E))
-    in match t with
-       | E -> T (E, x, E)
-       | T (_, v, _) -> ins v Fn.id t
+    and insLeaf y cont = if x = y then t else cont (T (E, x, E)) in
+    match t with E -> T (E, x, E) | T (_, v, _) -> ins v Fn.id t
 
   let gen =
     let open QCheck.Gen in
@@ -109,9 +90,11 @@ module MkUnbalancedSet (E : Ordered.S) : Set = struct
       | 0 -> pure empty
       | n ->
           frequency
-            [(1, pure empty);
-             (2, map3 node (self (n / 2)) E.gen (self (n / 2)))]
-    in sized @@ fix aux
+            [
+              (1, pure empty); (2, map3 node (self (n / 2)) E.gen (self (n / 2)));
+            ]
+    in
+    sized @@ fix aux
 
   let arbitrary = QCheck.make gen ~print:show
 
@@ -119,7 +102,6 @@ module MkUnbalancedSet (E : Ordered.S) : Set = struct
    * (T ((T ((T (E, 5, E)), 3, E)), 409, (T ((T (E, 9, E)), 6, (T (E, 0, E)))))) *)
 
   let generate n = QCheck.Gen.generate ~n gen
-
   let generate1 () = QCheck.Gen.generate1 gen
 
   let rec member (x, t) =
@@ -154,28 +136,18 @@ module MkUnbalancedSet (E : Ordered.S) : Set = struct
     | 1 -> T (E, x, E)
     | m -> T (complete' (x, m - 1), x, E)
 
-  let%bench_module ("UnbalancedSet"[@name_suffix sprintf "_%s" E.name]) =
+  let%bench_module ("UnbalancedSet" [@name_suffix sprintf "_%s" E.name]) =
     (module struct
-      let%bench "member" =
-        member (E.generate1 (), generate1 ())
-
-      let%bench "member' (Ex. 2.2)" =
-        member' (E.generate1 (), generate1 ())
-
-      let%bench "insert" =
-        insert (E.generate1 (), generate1 ())
-
-      let%bench "insert' (Ex. 2.3)" =
-        insert' (E.generate1 (), generate1 ())
+      let%bench "member" = member (E.generate1 (), generate1 ())
+      let%bench "member' (Ex. 2.2)" = member' (E.generate1 (), generate1 ())
+      let%bench "insert" = insert (E.generate1 (), generate1 ())
+      let%bench "insert' (Ex. 2.3)" = insert' (E.generate1 (), generate1 ())
 
       let%bench "insert'' (Ex. 2.3 CPS)" =
         insert'' (E.generate1 (), generate1 ())
 
-      let%bench "complete (Ex. 2.6 (a))" =
-        complete (E.generate1 (), 20)
-
-      let%bench "complete (Ex. 2.6 (b))" =
-        complete' (E.generate1 (), 20)
+      let%bench "complete (Ex. 2.6 (a))" = complete (E.generate1 (), 20)
+      let%bench "complete (Ex. 2.6 (b))" = complete' (E.generate1 (), 20)
     end)
 end
 

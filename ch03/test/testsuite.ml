@@ -1,3 +1,1 @@
-let () =
-  Alcotest.run "Ch03"
-    [ ("Persist", []) ]
+let () = Alcotest.run "Ch03" [ ("Persist", []) ]
