@@ -3,16 +3,17 @@ open Support
 open Ch02.List
 
 let propLength l = List.(length l + 1 = length @@ suffixes l)
-let propEmpty l = isSuffixOf Int.equal [] l
+let propHasEmptyListAsSuffix l = isSuffixOf ~eq:Int.equal ~suffix:[] l
 
 let testLength =
-  QCheck.Test.make ~count:50 ~name:"suffix length"
-    QCheck.(list small_int)
+  QCheck.Test.make ~count:50 ~name:"len(l) = n => len(suffixes(l)) = n + 1"
+    QCheck.(list small_nat)
     propLength
 
 let testEmpty =
-  QCheck.Test.make ~count:30 ~name:"suffix empty"
-    QCheck.(list small_int)
-    propEmpty
+  QCheck.Test.make ~count:30 ~name:"[] isSuffixOf suffixes(l)"
+    QCheck.(list small_nat)
+    propHasEmptyListAsSuffix
 
-let tests = List.map ~f:QCheck_alcotest.to_alcotest [ testLength; testEmpty ]
+let suite = [ testLength; testEmpty ]
+let tests = List.map ~f:QCheck_alcotest.to_alcotest suite

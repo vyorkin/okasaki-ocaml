@@ -1,3 +1,1 @@
-val dropLengthOpt : 'a list -> 'a list -> 'a list option
-val dropLength : 'a list -> 'a list -> 'a list
-val isSuffixOf : ('a -> 'a -> bool) -> 'a list -> 'a list -> bool
+val isSuffixOf : eq:('a -> 'a -> bool) -> suffix:'a list -> 'a list -> bool
