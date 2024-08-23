@@ -7,4 +7,5 @@ module type S = sig
   val head : 'a t -> 'a
   val tail : 'a t -> 'a t
   val ( ++ ) : 'a t -> 'a t -> 'a t
+  val update : 'a t * int * 'a -> 'a t
 end
