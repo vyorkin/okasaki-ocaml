@@ -1,3 +1,3 @@
 let () =
   Alcotest.run "Ch02"
-    [ ("Persist", List_test.tests) (* ; "Tree", Tree_test.tests *) ]
+    [ ("suffixes", List_test.Suffixes.tests) (* ; "Tree", Tree_test.tests *) ]

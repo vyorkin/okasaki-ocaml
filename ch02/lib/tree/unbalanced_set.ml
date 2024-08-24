@@ -59,7 +59,7 @@ module MkUnbalancedSet (E : Ordered.S) : Set = struct
     | T (l, y, r) when y < x -> T (l, y, insert (x, r))
     | _ -> t
 
-  exception SameValue
+  exception SameValueError
 
   (* Ex. 2.3 *)
   let insert' (x, t) =
@@ -68,9 +68,9 @@ module MkUnbalancedSet (E : Ordered.S) : Set = struct
       | E -> T (E, x, E)
       | T (l, v, r) when v < x -> T (ins l, v, r)
       | T (l, v, r) when x < v -> T (l, v, ins r)
-      | _ -> raise SameValue
+      | _ -> raise SameValueError
     in
-    try ins t with SameValue -> t
+    try ins t with SameValueError -> t
 
   (* Ex. 2.3 (CPS) *)
   let insert'' (x, t) =
