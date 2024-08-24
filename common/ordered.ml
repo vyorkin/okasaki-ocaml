@@ -7,6 +7,7 @@ module type S = sig
   val z : t
   val ( = ) : t -> t -> bool
   val ( < ) : t -> t -> bool
+  val ( > ) : t -> t -> bool
   val ( <= ) : t -> t -> bool
 end
 
@@ -19,6 +20,7 @@ module Int = struct
   let z = min_value
   let ( = ) = ( = )
   let ( < ) = ( < )
+  let ( > ) = ( > )
   let ( <= ) = ( <= )
   let gen = QCheck.Gen.nat
   let arbitrary = QCheck.make gen

@@ -1,6 +1,3 @@
-open Core
-open Okasaki_common
-
 (* More of my notes are here:
    https://github.com/vyorkin/okasaki-smlnj/blob/master/ch03/heap.sml *)
 
