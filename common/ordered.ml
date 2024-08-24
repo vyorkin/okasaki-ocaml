@@ -5,6 +5,7 @@ module type S = sig
 
   val name : string
   val z : t
+  val equal : t -> t -> bool
   val ( = ) : t -> t -> bool
   val ( < ) : t -> t -> bool
   val ( > ) : t -> t -> bool
@@ -18,6 +19,7 @@ module Int = struct
 
   let name = "int"
   let z = min_value
+  let equal = equal
   let ( = ) = ( = )
   let ( < ) = ( < )
   let ( > ) = ( > )

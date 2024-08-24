@@ -7,14 +7,16 @@ module type Set = sig
 
   include Gen.S with type t := t
 
+  val node : t -> elem -> t -> t
+  val equal : t -> t -> bool
   val empty : t
   val insert : elem * t -> t
   val member : elem * t -> bool
 end
 
-module MkUnbalancedSet (E : Ordered.S) : Set = struct
-  type elem = E.t [@@deriving show { with_path = false }]
-  type t = E | T of t * elem * t [@@deriving show { with_path = false }]
+module MkUnbalancedSet (E : Ordered.S) : Set with type elem := E.t = struct
+  type elem = E.t [@@deriving eq, show { with_path = false }]
+  type t = E | T of t * elem * t [@@deriving eq, show { with_path = false }]
 
   let empty = E
   let node l x r = T (l, x, r)

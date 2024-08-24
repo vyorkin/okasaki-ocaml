@@ -3,18 +3,18 @@ open Support
 open Ch02.List
 
 module Suffixes = struct
-  let propLength l = List.(length l + 1 = length @@ suffixes l)
-  let propHasEmptyListAsSuffix l = isSuffixOf ~eq:Int.equal ~suffix:[] l
+  let prop_length l = List.(length l + 1 = length @@ suffixes l)
+  let prop_has_empty_list_as_suffix l = isSuffixOf ~eq:Int.equal ~suffix:[] l
 
   let test_number_of_suffixes =
     QCheck.Test.make ~count:50 ~name:"len(l) = n => len(suffixes(l)) = n + 1"
       QCheck.(list small_nat)
-      propLength
+      prop_length
 
   let test_empty_suffix =
     QCheck.Test.make ~count:30 ~name:"[] isSuffixOf suffixes(l)"
       QCheck.(list small_nat)
-      propHasEmptyListAsSuffix
+      prop_has_empty_list_as_suffix
 
   let test_example () =
     Alcotest.(check (list (list int)))
@@ -22,7 +22,7 @@ module Suffixes = struct
       [ [ 1; 2; 3; 4 ]; [ 2; 3; 4 ]; [ 3; 4 ]; [ 4 ]; [] ]
       (suffixes [ 1; 2; 3; 4 ])
 
-  let simple =
+  let cases =
     let open Alcotest in
     [
       test_case "returns list of all suffixes in decreasing order of length"
@@ -33,5 +33,5 @@ module Suffixes = struct
     List.map ~f:QCheck_alcotest.to_alcotest
       [ test_number_of_suffixes; test_empty_suffix ]
 
-  let tests = simple @ qcheck
+  let tests = cases @ qcheck
 end

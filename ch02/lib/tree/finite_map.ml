@@ -43,5 +43,3 @@ end
  *     let e = E.mk k v in
  *     S.insert (e ??, s)
  * end *)
-
-module IntUS = MkUnbalancedSet (Ordered.Int)
