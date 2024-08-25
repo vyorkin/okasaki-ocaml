@@ -79,19 +79,6 @@ module MkUnbalancedSet (E : Ordered.S) : Set with type elem := E.t = struct
       let%bench "insert" = insert (E.generate1 (), generate1 ())
     end)
 
-  exception SameValueError
-
-  (* Ex. 2.3 *)
-  let insert_ex_2_3 (x, t) =
-    let open E in
-    let rec insert_node = function
-      | E -> T (E, x, E)
-      | T (l, y, r) when x < y -> T (insert_node l, y, r)
-      | T (l, y, r) when x > y -> T (l, y, insert_node r)
-      | _ -> raise SameValueError
-    in
-    try insert_node t with SameValueError -> t
-
   (* Ex. 2.2:
      Rewrite member to take no more than d + 1 comparisons by
      keeping track of a candidate element that might be
@@ -108,6 +95,23 @@ module MkUnbalancedSet (E : Ordered.S) : Set with type elem := E.t = struct
     in
     (* Assuming tree doesn't have E.z elements. *)
     member (x, t, E.z)
+
+  exception SameValueError
+
+  (* Ex. 2.3 *)
+  let insert_ex_2_3 (x, t) =
+    let open E in
+    let rec insert_node = function
+      | E -> T (E, x, E)
+      | T (l, y, r) when x < y -> T (insert_node l, y, r)
+      | T (l, y, r) when x > y -> T (l, y, insert_node r)
+      (* The element being inserted is already present in the tree,
+         raise an error to avoiding any unnecessary copying of nodes. *)
+      | _ -> raise SameValueError
+    in
+    (* We already have that element,
+       so lets just return the original tree. *)
+    try insert_node t with SameValueError -> t
 
   (* Ex. 2.5 (a) *)
   let rec complete_ex_2_5_a (x, d) =
