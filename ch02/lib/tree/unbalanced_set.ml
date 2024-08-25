@@ -15,6 +15,7 @@ module type Set = sig
   val draw : ?prefix:string -> ?is_left:bool -> t -> unit
   val member_ex_2_2 : elem * t -> bool
   val insert_ex_2_3 : elem * t -> t
+  val insert_ex_2_4 : elem * t -> t
   val complete_ex_2_5_a : elem * int -> t
   val complete_ex_2_5_b : elem * int -> t
 end
@@ -86,15 +87,15 @@ module MkUnbalancedSet (E : Ordered.S) : Set with type elem := E.t = struct
      which < returned false or ≤ returned true) and
      checking for equality only when you hit the bottom of the tree. *)
   let member_ex_2_2 (x, t) =
-    let rec member (x, t, e) =
+    let rec member (t, e) =
       let open E in
       match t with
       | E -> x = e (* Reached bottom of the tree *)
-      | T (l, y, _) when x <= y -> member (x, l, y)
-      | T (_, y, r) -> member (x, r, y)
+      | T (l, y, _) when x <= y -> member (l, y)
+      | T (_, y, r) -> member (r, y)
     in
     (* Assuming tree doesn't have E.z elements. *)
-    member (x, t, E.z)
+    member (t, E.z)
 
   exception SameValueError
 
@@ -106,12 +107,25 @@ module MkUnbalancedSet (E : Ordered.S) : Set with type elem := E.t = struct
       | T (l, y, r) when x < y -> T (insert_node l, y, r)
       | T (l, y, r) when x > y -> T (l, y, insert_node r)
       (* The element being inserted is already present in the tree,
-         raise an error to avoiding any unnecessary copying of nodes. *)
+         raise an error to avoid any unnecessary copying of nodes. *)
       | _ -> raise SameValueError
     in
     (* We already have that element,
        so lets just return the original tree. *)
     try insert_node t with SameValueError -> t
+
+  (* Ex. 2.4 *)
+  let insert_ex_2_4 (x, t) =
+    let open E in
+    let rec insert_node (t, c) =
+      if c = x then raise SameValueError
+      else
+        match t with
+        | E -> T (E, x, E)
+        | T (l, y, r) when x <= y -> T (insert_node (l, y), y, r)
+        | T (l, y, r) -> T (l, y, insert_node (r, y))
+    in
+    try insert_node (t, E.z) with SameValueError -> t
 
   (* Ex. 2.5 (a) *)
   let rec complete_ex_2_5_a (x, d) =
