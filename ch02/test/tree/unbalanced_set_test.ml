@@ -153,4 +153,3 @@ let tests =
   @ mk_member_tests ~name:"member_ex_2_2" M.member_ex_2_2
   @ mk_insert_tests ~name:"insert" M.insert
   @ mk_insert_tests ~name:"insert_ex_2_3" M.insert_ex_2_3
-  @ mk_insert_tests ~name:"insert_ex_2_3_cps" M.insert_ex_2_3_cps

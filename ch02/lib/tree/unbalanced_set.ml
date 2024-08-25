@@ -15,7 +15,6 @@ module type Set = sig
   val draw : ?prefix:string -> ?is_left:bool -> t -> unit
   val member_ex_2_2 : elem * t -> bool
   val insert_ex_2_3 : elem * t -> t
-  val insert_ex_2_3_cps : elem * t -> t
   val complete_ex_2_5_a : elem * int -> t
   val complete_ex_2_5_b : elem * int -> t
 end
@@ -93,18 +92,6 @@ module MkUnbalancedSet (E : Ordered.S) : Set with type elem := E.t = struct
     in
     try insert_node t with SameValueError -> t
 
-  (* Ex. 2.3 (CPS) *)
-  let insert_ex_2_3_cps (x, t) =
-    let open E in
-    let rec ins y cont = function
-      | E -> insert_leaf y cont
-      | T (l, z, r) -> insert_node y cont (l, z, r)
-    and insert_node y cont (l, z, r) =
-      if x < y then ins y (fun l' -> cont (T (l', z, r))) l
-      else ins z (fun r' -> cont (T (l, z, r'))) r
-    and insert_leaf y cont = if x = y then t else cont (T (E, x, E)) in
-    match t with E -> T (E, x, E) | T (_, v, _) -> ins v Fn.id t
-
   (* Ex. 2.2:
      Rewrite member to take no more than d + 1 comparisons by
      keeping track of a candidate element that might be
@@ -141,10 +128,6 @@ module MkUnbalancedSet (E : Ordered.S) : Set with type elem := E.t = struct
     (module struct
       let%bench "member (Ex. 2.2)" = member_ex_2_2 (E.generate1 (), generate1 ())
       let%bench "insert (Ex. 2.3)" = insert_ex_2_3 (E.generate1 (), generate1 ())
-
-      let%bench "insert (Ex. 2.3 CPS)" =
-        insert_ex_2_3_cps (E.generate1 (), generate1 ())
-
       let%bench "complete (Ex. 2.5 (a))" = complete_ex_2_5_a (E.generate1 (), 20)
       let%bench "complete (Ex. 2.5 (b))" = complete_ex_2_5_b (E.generate1 (), 20)
     end)
