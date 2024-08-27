@@ -9,12 +9,17 @@ module type FiniteMap = sig
 
   include Gen.S with type t := t
 
+  exception DuplicateKeyError
+  exception NotFoundError
+
+  val node : t -> k * v -> t -> t
   val empty : t
   val bind : k * v * t -> t
   val lookup : k * t -> v
 end
 
-module MkFiniteMap (K : Ordered.S) (V : Ordered.S) : FiniteMap = struct
+module MkFiniteMap (K : Ordered.S) (V : Ordered.S) :
+  FiniteMap with type k = K.t and type v = V.t = struct
   type k = K.t [@@deriving eq, show { with_path = false }]
   type v = V.t [@@deriving eq, show { with_path = false }]
   type elem = k * v [@@deriving eq, show { with_path = false }]
