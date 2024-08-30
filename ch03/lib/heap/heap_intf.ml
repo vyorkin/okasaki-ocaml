@@ -13,5 +13,4 @@ module type S = sig
   val merge : t * t -> t
   val find_min : t -> elem option
   val delete_min : t -> t option
-  val from_list : elem list -> t
 end

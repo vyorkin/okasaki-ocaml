@@ -65,8 +65,8 @@ module MkLeftistHeap (E : Ordered.S) : Heap_intf.S with type elem = E.t = struct
      half the heaps as the previous one, the overall complexity remains O(n). *)
 end
 
-(* Ex. 3.4 *)
-module MkWeightedLeftistHeap (E : Ordered.S) :
+(* Ex. 3.4 (b) *)
+module MkWeightBiasedLeftistHeap (E : Ordered.S) :
   Heap_intf.S with type elem = E.t = struct
   type elem = E.t [@@deriving eq, show { with_path = false }]
 
@@ -84,39 +84,33 @@ module MkWeightedLeftistHeap (E : Ordered.S) :
     let s = sl + sr + 1 in
     if sl >= sr then T (s, x, l, r) else T (s, x, r, l)
 
+  (* Ex. 3.4 (c)
+     Currently, merge operates in two passes:
+     1) a top-down pass consisting of calls to `merge`, and
+     2) a bottom-up pass consisting of calls to the helper function `mkT`.
+     Modify `merge` to operate in a single, top-down pass. *)
   let rec merge = function
     | h1, E -> h1
     | E, h2 -> h2
     | (T (_, x, l1, r1) as h1), (T (_, y, l2, r2) as h2) ->
-        if E.(x <= y) then mkT (x, l1, merge (r1, h2))
-        else mkT (y, l2, merge (h1, r2))
+        if E.(x <= y) then
+          let h = merge (r1, h2) in
+          let s_heap, s_node = (size h, size l1) in
+          let s = s_node + s_heap + 1 in
+          if s_node >= s_heap then T (s, x, l1, h) else T (s, x, h, l1)
+        else
+          let h = merge (h1, r2) in
+          let s_heap, s_node = (size h, size l2) in
+          let s = s_node + s_heap + 1 in
+          if s_node >= s_heap then T (s, y, l2, h) else T (s, y, h, l2)
+
+  (* Ex. 3.4 (d)
+     In a lazy environment, the top-down merge allows portions of the heap to be merged incrementally.
+     The merging process can be paused and resumed as needed, meaning only the necessary parts of the
+     tree are evaluated when required. This can lead to better memory usage and performance,
+     as unnecessary computations can be avoided. *)
 
   let insert (x, h) = merge (T (1, x, E, E), h)
   let delete_min = function E -> None | T (_, _, l, r) -> Some (merge (l, r))
   let find_min = function E -> None | T (_, x, _, _) -> Some x
-
-  let insert_3_2 (x, t) =
-    let rec insert (x, t) =
-      match t with
-      | E -> leaf x
-      | T (_, y, l, r) ->
-          (* The leftist property will hold if we always insert into the left subtree. *)
-          if E.(x <= y) then mkT (x, insert (y, l), r)
-          else mkT (y, insert (x, l), r)
-    in
-    insert (x, t)
-
-  (* Ex. 3.3: Should have O(n) complexity. *)
-  let from_list l =
-    let heaps = List.map l ~f:leaf in
-    let rec merge_adjacent = function
-      | h1 :: h2 :: hs -> merge (h1, h2) :: merge_adjacent hs
-      | hs -> hs
-    in
-    let rec fold = function
-      | [] -> empty
-      | [ h ] -> h
-      | hs -> fold (merge_adjacent hs)
-    in
-    fold heaps
 end
