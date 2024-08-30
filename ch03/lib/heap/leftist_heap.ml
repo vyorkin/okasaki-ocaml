@@ -105,10 +105,15 @@ module MkWeightBiasedLeftistHeap (E : Ordered.S) :
           if s_node >= s_heap then T (s, y, l2, h) else T (s, y, h, l2)
 
   (* Ex. 3.4 (d)
+
      In a lazy environment, the top-down merge allows portions of the heap to be merged incrementally.
      The merging process can be paused and resumed as needed, meaning only the necessary parts of the
      tree are evaluated when required. This can lead to better memory usage and performance,
-     as unnecessary computations can be avoided. *)
+     as unnecessary computations can be avoided.
+
+     In a concurent enviroment the top-down approach allows for more fine-grained parallelism
+     because each recursive call to merge works on a smaller part of the heap.
+     These smaller tasks can potentially be distributed across multiple threads. *)
 
   let insert (x, h) = merge (T (1, x, E, E), h)
   let delete_min = function E -> None | T (_, _, l, r) -> Some (merge (l, r))
