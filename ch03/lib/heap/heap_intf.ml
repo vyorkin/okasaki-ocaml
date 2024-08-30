@@ -9,11 +9,9 @@ module type S = sig
 
   val empty : t
   val is_empty : t -> bool
-  val rank : t -> int
   val insert : elem * t -> t
   val merge : t * t -> t
   val find_min : t -> elem option
   val delete_min : t -> t option
-  val insert_3_2 : elem * t -> t
   val from_list : elem list -> t
 end
