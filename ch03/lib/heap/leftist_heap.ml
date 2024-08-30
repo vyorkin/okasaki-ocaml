@@ -41,6 +41,26 @@ module MkLeftistHeap (E : Ordered.S) : Heap_intf.S with type elem = E.t = struct
     in
     insert (x, t)
 
-  (* Should have O(n) complexity. *)
-  let from_list l = failwith "not implemented"
+  let from_list_fold_right l =
+    let f x acc = merge (leaf x, acc) in
+    List.fold_right l ~init:empty ~f
+
+  (* Ex. 3.3: Should have O(n) complexity. *)
+  let from_list l =
+    let heaps = List.map l ~f:leaf in
+    let rec merge_adjacent = function
+      | h1 :: h2 :: hs -> merge (h1, h2) :: merge_adjacent hs
+      | hs -> hs
+    in
+    let rec fold = function
+      | [] -> empty
+      | [ h ] -> h
+      | hs -> fold (merge_adjacent hs)
+    in
+    fold heaps
+
+  (* Turning each element into a heap is O(1) => this step is O(n).
+     Number of heaps is halved in each pass, and each pass involves O(n) work,
+     the total number of passes is O(log n). However, since each pass only processes
+     half the heaps as the previous one, the overall complexity remains O(n). *)
 end
