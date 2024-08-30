@@ -74,15 +74,9 @@ module MkWeightBiasedLeftistHeap (E : Ordered.S) :
   [@@deriving eq, show { with_path = false }]
 
   let empty = E
-  let node s x l r = T (s, x, l, r)
   let leaf x = T (1, x, E, E)
   let is_empty = function E -> true | _ -> false
   let size = function E -> 0 | T (s, _, _, _) -> s
-
-  let mkT (x, l, r) =
-    let sl, sr = (size l, size r) in
-    let s = sl + sr + 1 in
-    if sl >= sr then T (s, x, l, r) else T (s, x, r, l)
 
   (* Ex. 3.4 (c)
      Currently, merge operates in two passes:
